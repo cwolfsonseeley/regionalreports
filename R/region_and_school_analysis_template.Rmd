@@ -5,16 +5,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r echo=FALSE, include=FALSE}
-## enter school code, name, and dates
-msa = msa_code
-msa_name = "msa name as you'd like it to appear in the report"
-school_code = "school_code"
-school_name = "school name as you'd like it to appear in the report"
-from = yyyymmdd
-to = yyyymmdd
-```
-
 ```{r echo = FALSE}
 model_format <- function(desc, type) {
   replacement_value <- switch (type,
@@ -48,43 +38,43 @@ knitr::opts_chunk$set(echo = TRUE)
 ## set up the functions
 region_and_school <- function(school_code, msa) {
 
-  region_and_school_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/region_and_school.sql")
+  region_and_school_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/region_and_school.sql")
   getcdw::get_cdw(region_and_school_query(school_code = school_code, msa = msa))
 }
 
 imp_cap <- function(school_code, msa) {
   
-  imp_cap_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/imp_cap.sql")
+  imp_cap_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/imp_cap.sql")
   getcdw::get_cdw(imp_cap_query(school_code = school_code, msa = msa))
 }
 
 mgs <- function(school_code, msa) {
   
-  mgs_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/mgs.sql")
+  mgs_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/mgs.sql")
   getcdw::get_cdw(mgs_query(school_code = school_code, msa = msa))
 }
 
 events <- function(school_code, msa, from, to) {
   
-  events_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/events.sql")
+  events_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/events.sql")
   getcdw::get_cdw(events_query(school_code = school_code, msa = msa, from = from, to = to))
 }
 
 visits <- function(school_code, msa, from, to) {
   
-  visits_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/visits.sql")
+  visits_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/visits.sql")
   getcdw::get_cdw(visits_query(school_code = school_code, msa = msa, from = from, to = to))
 }
 
 gifts <- function(school_code, msa, from, to) {
   
-  gifts_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/gifts.sql")
+  gifts_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/gifts.sql")
   getcdw::get_cdw(gifts_query(school_code = school_code, msa = msa, from = from, to = to))
 }
 
 proposals <- function(school_code, msa, from, to) {
   
-  proposals_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/Regional Analysis/sql/region_and_school/proposals.sql")
+  proposals_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region_and_school/proposals.sql")
   getcdw::get_cdw(proposals_query(school_code = school_code, msa = msa, from = from, to = to))
 }
 
