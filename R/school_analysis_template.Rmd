@@ -39,47 +39,47 @@ knitr::opts_chunk$set(echo = TRUE)
 school <- function(school_code) {
 
   school_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/school.sql")
-  getcdw::get_cdw(school_query(school_code = school))
+  getcdw::get_cdw(school_query(school_code = school_code))
 }
 
 imp_cap <- function(school_code) {
   
   imp_cap_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/imp_cap.sql")
-  getcdw::get_cdw(imp_cap_query(school_code = school))
+  getcdw::get_cdw(imp_cap_query(school_code = school_code))
 }
 
 mgs <- function(school_code) {
   
   mgs_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/mgs.sql")
-  getcdw::get_cdw(mgs_query(school_code = school))
+  getcdw::get_cdw(mgs_query(school_code = school_code))
 }
 
 events <- function(school_code, from, to) {
   
   events_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/events.sql")
-  getcdw::get_cdw(events_query(school_code = school, from = from, to = to))
+  getcdw::get_cdw(events_query(school_code = school_code, from = from, to = to))
 }
 
 visits <- function(school_code, from, to) {
   
   visits_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/visits.sql")
-  getcdw::get_cdw(visits_query(school_code = school, from = from, to = to))
+  getcdw::get_cdw(visits_query(school_code = school_code, from = from, to = to))
 }
 
 gifts <- function(school_code, from, to) {
   
   gifts_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/gifts.sql")
-  getcdw::get_cdw(gifts_query(school_code = school, from = from, to = to))
+  getcdw::get_cdw(gifts_query(school_code = school_code, from = from, to = to))
 }
 
 proposals <- function(school_code, from, to) {
   
   proposals_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/proposals.sql")
-  getcdw::get_cdw(proposals_query(school_code = school, from = from, to = to))
+  getcdw::get_cdw(proposals_query(school_code = school_code, from = from, to = to))
 }
 
 ## get the data
-school_prospects <- school(school_code = school)
+school_prospects <- school(school_code = school_code)
 school_prospects$capacity_rating_code <- as.numeric(school_prospects$capacity_rating_code)
 school_prospects$pref_class_year <- as.numeric(school_prospects$pref_class_year)
 school_prospects <- school_prospects %>% 
@@ -89,12 +89,12 @@ school_prospects <- school_prospects %>%
                       labels = c("20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "Over 90"),
                       include.lowest = TRUE, right = FALSE)) %>%
   select(-pref_class_year, -birth_year, -age)
-imp_cap <- imp_cap(school_code = school)
-mgs <- mgs(school_code = school)
-events <- events(school_code = school, from = from, to = to)
-visits <- visits(school_code = school, from = from, to = to)
-gifts <- gifts(school_code = school, from = from, to = to)
-proposals <- proposals(school_code = school, from = from, to = to)
+imp_cap <- imp_cap(school_code = school_code)
+mgs <- mgs(school_code = school_code)
+events <- events(school_code = school_code, from = from, to = to)
+visits <- visits(school_code = school_code, from = from, to = to)
+gifts <- gifts(school_code = school_code, from = from, to = to)
+proposals <- proposals(school_code = school_code, from = from, to = to)
 
 ## create table that allows capacity descriptions to be ordered numerically
 cap_match <- school_prospects %>%
