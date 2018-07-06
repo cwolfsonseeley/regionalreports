@@ -113,10 +113,12 @@ capacity_mgs_table <- prospects %>%
   spread(major_gift_description, households) %>%
   left_join(cap_match, by = "capacity_rating_desc") %>% 
   arrange(capacity_rating_code) %>%
-  select(-capacity_rating_code)
+  select(-capacity_rating_code) %>% 
+  replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
 
 colnames(capacity_mgs_table)[colnames(capacity_mgs_table)=="capacity_rating_desc"] <- "Capacity Rating"
-capacity_mgs_table[is.na(capacity_mgs_table)] <- 0
 
 ## ics by major gift score table
 ics_mgs_table <- prospects %>%
@@ -131,7 +133,10 @@ ics_mgs_table <- prospects %>%
            model_format(major_gift_description, 'mgs')) %>%
   group_by(implied_capacity_description, major_gift_description) %>%
   summarise(households = n_distinct(hh_id)) %>%
-  spread(major_gift_description, households)
+  spread(major_gift_description, households) %>%
+   replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
 
 colnames(ics_mgs_table)[colnames(ics_mgs_table)=="implied_capacity_description"] <- "Implied Capacity Score"
 ics_mgs_table[is.na(ics_mgs_table)] <- 0

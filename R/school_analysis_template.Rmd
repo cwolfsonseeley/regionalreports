@@ -5,6 +5,19 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r echo = FALSE}
+model_format <- function(desc, type) {
+  replacement_value <- switch (type,
+    mgs = "No Major Gift Score",
+    ics = "No Implied Capacity Score",
+    stop("type must be 'mgs' or 'ics'")
+  )
+  desc[is.na(desc)] <- replacement_value
+  factor(desc, levels = c("Most Likely", "More Likely", "Somewhat Likely",
+                          "Less Likely", "Least Likely", replacement_value))
+}
+```
+
 ```{r echo=FALSE}
 knitr::include_graphics("R:/Prospect Development/Prospect Development/Letterhead Templates/UDAR_PD/Prospect Development banner_portrait.jpg")
 ```
@@ -94,17 +107,18 @@ capacity_mgs_table <- school_prospects %>%
   left_join(mgs, by = "hh_id") %>%
   select(hh_id, capacity_rating_desc, major_gift_description) %>%
   distinct() %>%
-  mutate(major_gift_description = ifelse(is.na(major_gift_description), "No Major Gift Score", major_gift_description)) %>%
+  mutate(major_gift_description = model_format(major_gift_description, 'mgs')) %>% 
   group_by(capacity_rating_desc, major_gift_description) %>%
   summarise(households = n_distinct(hh_id)) %>%
   spread(major_gift_description, households) %>%
   left_join(cap_match, by = "capacity_rating_desc") %>% 
   arrange(capacity_rating_code) %>%
   select(-capacity_rating_code) %>% 
-  select(capacity_rating_desc, `Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)
+  replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
   
 colnames(capacity_mgs_table)[colnames(capacity_mgs_table)=="capacity_rating_desc"] <- "Capacity Rating"
-capacity_mgs_table[is.na(capacity_mgs_table)] <- 0
 
 ## ics by major gift score table
 ics_mgs_table <- school_prospects %>%
@@ -113,22 +127,18 @@ ics_mgs_table <- school_prospects %>%
   left_join(imp_cap, by = "hh_id") %>%
   left_join(mgs, by = "hh_id") %>%
   select(hh_id, implied_capacity_description, major_gift_description) %>%
-  mutate(implied_capacity_description = ifelse(is.na(implied_capacity_description), "No Implied Capacity Score", implied_capacity_description)) %>%
-  mutate(major_gift_description = ifelse(is.na(major_gift_description), "No Major Gift Score", major_gift_description)) %>%
+  mutate(implied_capacity_description = 
+           model_format(implied_capacity_description, 'ics')) %>%
+  mutate(major_gift_description = 
+           model_format(major_gift_description, 'mgs')) %>%
   group_by(implied_capacity_description, major_gift_description) %>%
   summarise(households = n_distinct(hh_id)) %>%
   spread(major_gift_description, households) %>%
-  mutate(order = ifelse(implied_capacity_description == "Most Likely", 1,
-                        ifelse(implied_capacity_description == "More Likely", 2,
-                               ifelse(implied_capacity_description == "Somewhat Likely", 3,
-                                      ifelse(implied_capacity_description == "Less Likely", 4,
-                                             ifelse(implied_capacity_description == "Least Likely", 5,
-                                                    ifelse(implied_capacity_description == "No Implied Capacity Score", 6))))))) %>%
-  arrange(order) %>%
-  select(implied_capacity_description, `Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)
+   replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
 
 colnames(ics_mgs_table)[colnames(ics_mgs_table)=="implied_capacity_description"] <- "Implied Capacity Score"
-ics_mgs_table[is.na(ics_mgs_table)] <- 0
 
 ## record type summary
 record_type <- school_prospects %>%
