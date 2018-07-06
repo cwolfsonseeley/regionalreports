@@ -9,7 +9,7 @@
 #' @export
 #' @examples
 #' # This would output the school report for the College of Engineering from January 1, 2014 to June 30, 2018
-#' school_report(school_code = EN, school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/engineering_report")
+#' school_report(school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/engineering_report")
 
 school_report = function(school_code, school_name, from, to, output) {
   rmarkdown::render(
