@@ -4,15 +4,12 @@
 \alias{regional_school_report}
 \title{Regional School Report}
 \usage{
-regional_school_report(msa, msa_name, school_code, school_name, from, to,
-  output)
+regional_school_report(msa, msa_name, school, school_name, from, to, output)
 }
 \arguments{
 \item{msa}{MSA code from CDW}
 
 \item{msa_name}{name you'd like to give MSA as it appears in the report}
-
-\item{school_code}{school code from CDW}
 
 \item{school_name}{school name as you'd like it to appear in the report}
 
@@ -21,11 +18,13 @@ regional_school_report(msa, msa_name, school_code, school_name, from, to,
 \item{to}{end date in yyyymmdd format}
 
 \item{output}{file location and name for report}
+
+\item{school_code}{school code from CDW}
 }
 \description{
 This function creates a Regional School Report for specified MSA and graduating school and outputs the report as an html file.
 }
 \examples{
 # This would output the report for Boston and the College of Engineering from January 1, 2014 to June 30, 2018
-school_report(msa = 14460, msa_name = "Boston", msa = school = EN, school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/engineering_report")
+school_report(msa = 14460, msa_name = "Boston", school = EN, school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
 }
