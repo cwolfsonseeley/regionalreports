@@ -247,7 +247,10 @@ The following table looks at the breakdown of each capacity rating by Major Gift
 capacity_mgs_table %>%
   kable(format.args = list(big.mark = ",")) %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
-  add_header_above(header = c(" " = 1, "Major Gift Score" = 6))
+  add_header_above(
+    header = c(" " = 1, 
+               "Major Gift Score" = ncol(capacity_mgs_table) - 2), 
+                " "  = 1)
 
 ```
 
@@ -257,7 +260,10 @@ For unrated households only, the following table looks at the breakdown of Impli
 ics_mgs_table %>%
   kable(format.args = list(big.mark = ",")) %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
-  add_header_above(header = c(" " = 1, "Major Gift Score" = 6))
+  add_header_above(
+    header = c(" " = 1, 
+               "Major Gift Score" = ncol(capacity_mgs_table) - 2), 
+                " "  = 1)
 
 ```
 
