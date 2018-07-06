@@ -1,0 +1,407 @@
+---
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = FALSE}
+model_format <- function(desc, type) {
+  replacement_value <- switch (type,
+    mgs = "No Major Gift Score",
+    ics = "No Implied Capacity Score",
+    stop("type must be 'mgs' or 'ics'")
+  )
+  desc[is.na(desc)] <- replacement_value
+  factor(desc, levels = c("Most Likely", "More Likely", "Somewhat Likely",
+                          "Less Likely", "Least Likely", replacement_value))
+}
+```
+
+```{r echo=FALSE}
+knitr::include_graphics("R:/Prospect Development/Prospect Development/Letterhead Templates/UDAR_PD/Prospect Development banner_portrait.jpg")
+```
+
+# `r msa_name` Regional Analysis
+`r format(Sys.time(), "%B %d, %Y")`
+
+```{r include=FALSE}
+library(getcdw)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(scales)
+library(kableExtra)
+library(tidyr)
+knitr::opts_chunk$set(echo = TRUE)
+
+## set up the functions
+region <- function(msa) {
+
+  regional_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/region.sql")
+  getcdw::get_cdw(regional_query(msa = msa))
+}
+
+imp_cap <- function(msa) {
+  
+  imp_cap_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/imp_cap.sql")
+  getcdw::get_cdw(imp_cap_query(msa = msa))
+}
+
+mgs <- function(msa) {
+  
+  mgs_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/mgs.sql")
+  getcdw::get_cdw(mgs_query(msa = msa))
+}
+
+events <- function(msa, from, to) {
+  
+  events_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/events.sql")
+  getcdw::get_cdw(events_query(msa = msa, from = from, to = to))
+}
+
+visits <- function(msa, from, to) {
+  
+  visits_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/visits.sql")
+  getcdw::get_cdw(visits_query(msa = msa, from = from, to = to))
+}
+
+gifts <- function(msa, from, to) {
+  
+  gifts_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/gifts.sql")
+  getcdw::get_cdw(gifts_query(msa = msa, from = from, to = to))
+}
+
+proposals <- function(msa, from, to) {
+  
+  proposals_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/proposals.sql")
+  getcdw::get_cdw(proposals_query(msa = msa, from = from, to = to))
+}
+
+## get the data
+region_prospects <- region(msa = msa)
+region_prospects$capacity_rating_code <- as.numeric(region_prospects$capacity_rating_code)
+region_prospects$pref_class_year <- as.numeric(region_prospects$pref_class_year)
+region_prospects <- region_prospects %>% 
+  mutate(age = ifelse(!is.na(birth_year), 2018-birth_year, 
+                      2040-pref_class_year)) %>%
+  mutate(decade = cut(age, breaks = c(20, 30, 40, 50, 60, 70, 80, 90, Inf),
+                      labels = c("20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80-89", "Over 90"),
+                      include.lowest = TRUE, right = FALSE)) %>%
+  select(-pref_class_year, -birth_year, -age)
+imp_cap <- imp_cap(msa = msa)
+mgs <- mgs(msa = msa)
+events <- events(msa = msa, from = from, to = to)
+visits <- visits(msa = msa, from = from, to = to)
+gifts <- gifts(msa = msa, from = from, to = to)
+proposals <- proposals(msa = msa, from = from, to = to)
+
+## create table that allows capacity descriptions to be ordered numerically
+cap_match <- region_prospects %>%
+  select(capacity_rating_code, capacity_rating_desc) %>%
+  distinct()
+
+## rating by major gift score table
+capacity_mgs_table <- region_prospects %>%
+  mutate(capacity_rating_desc = ifelse(is.na(capacity_rating_desc), "Not Rated", capacity_rating_desc)) %>%
+  left_join(mgs, by = "hh_id") %>%
+  select(hh_id, capacity_rating_desc, major_gift_description) %>%
+  distinct() %>%
+  mutate(major_gift_description = model_format(major_gift_description, 'mgs')) %>% 
+  group_by(capacity_rating_desc, major_gift_description) %>%
+  summarise(households = n_distinct(hh_id)) %>%
+  spread(major_gift_description, households) %>%
+  left_join(cap_match, by = "capacity_rating_desc") %>% 
+  arrange(capacity_rating_code) %>%
+  select(-capacity_rating_code) %>% 
+  replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
+
+colnames(capacity_mgs_table)[colnames(capacity_mgs_table)=="capacity_rating_desc"] <- "Capacity Rating"
+
+
+## ics by major gift score table
+ics_mgs_table <- region_prospects %>%
+  filter(is.na(capacity_rating_code)) %>%
+  select(hh_id) %>%
+  left_join(imp_cap, by = "hh_id") %>%
+  left_join(mgs, by = "hh_id") %>%
+  select(hh_id, implied_capacity_description, major_gift_description) %>%
+  mutate(implied_capacity_description = 
+           model_format(implied_capacity_description, 'ics')) %>%
+  mutate(major_gift_description = 
+           model_format(major_gift_description, 'mgs')) %>%
+  group_by(implied_capacity_description, major_gift_description) %>%
+  summarise(households = n_distinct(hh_id)) %>%
+  spread(major_gift_description, households) %>%
+   replace(is.na(.), 0) %>%
+  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
+  janitor::adorn_totals("row")
+
+
+colnames(ics_mgs_table)[colnames(ics_mgs_table)=="implied_capacity_description"] <- "Implied Capacity Score"
+
+## record type summary
+record_type <- region_prospects %>%
+  group_by(record_type_desc) %>%
+  summarise(entities = n_distinct(entity_id)) %>%
+  arrange(-entities)
+
+## age summary
+age <- region_prospects %>%
+  filter(!is.na(decade)) %>%
+  group_by(decade) %>%
+  summarise(entities = n_distinct(entity_id)) 
+
+## school summary
+school <- region_prospects %>% 
+  filter(!is.na(pref_school_desc)) %>%
+  group_by(pref_school_desc) %>%
+  summarise(entities = n_distinct(entity_id)) %>%
+  top_n(5, entities) %>%
+  arrange(-entities)
+
+## rating summary
+rated <- region_prospects %>%
+  mutate(capacity_rating = ifelse(is.na(capacity_rating_desc), "Not Rated", capacity_rating_desc)) %>%
+  group_by(capacity_rating, capacity_rating_code) %>%
+  summarise(households = n_distinct(hh_id)) %>%
+  arrange(capacity_rating_code) 
+
+## proposals summary
+proposals <- proposals %>%
+  mutate(ask_made = ifelse(ask_amt > 0, 1, 0),
+         disqualified = ifelse(stage_desc == "Disqualified", 1, 0),
+         gift_made = ifelse(gift > 0, 1, 0),
+         canceled = ifelse(stage_desc == "Canceled", 1, 0),
+         turned_down = ifelse(stage_desc == "Turned Down", 1, 0)) %>%
+  mutate(in_progress = ifelse(is.na(commit_turndown_date) & ((disqualified + gift_made + canceled + turned_down) == 0), 1, 0)) %>%
+  mutate(canceled = ifelse((!is.na(commit_turndown_date) & stage_desc %in% c("Qualification", "Cultivation", "Proposal Development")), 1, canceled))
+
+```
+
+## Introduction
+
+This analysis looks at all alumni and current parents with a primary address in the `r msa_name` MSA. The time period included is from `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` to `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`.
+
+There are currently `r comma(n_distinct(region_prospects$entity_id))` alumni and current parents in `r msa_name`, comprising `r comma(n_distinct(region_prospects$hh_id))` households.
+
+## Demographics
+
+`r percent(as.numeric(record_type[1,2]/n_distinct(region_prospects$entity_id)))` of entities living in `r msa_name` have a record type of `r record_type[1,1]`, `r percent(as.numeric(record_type[2,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[2,1]`, and `r percent(as.numeric(record_type[3,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[3,1]`. Note that these percentages do not add up to 100% since each entity may have multiple record types.
+
+```{r echo=FALSE, fig.align="center"}
+record_type %>%
+  kable(col.names = c("Record Type", "Entities*"),
+        format.args = list(big.mark = ",")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
+  footnote(symbol = "Each entity may have multiple record types"
+)
+```
+
+Age has been determined by birth date if available and estimated by class year if not. Alumni are most likely to be `r arrange(top_n(age, 2), -entities)[1,1]` years old (`r percent(as.numeric(arrange(top_n(age, 2), -entities)[1,2]/sum(age$entities)))`), with the next most common age being `r arrange(top_n(age, 2), -entities)[2,1]` (`r percent(as.numeric(arrange(top_n(age, 2), -entities)[2,2]/sum(age$entities)))`).
+
+```{r echo=FALSE, fig.align="center"}
+age %>%
+  ggplot(aes(x=decade, y=entities)) +
+  geom_bar(stat = "identity") +
+  theme_bw() + 
+  theme(rect = element_blank(), axis.ticks = element_blank()) +
+  ylab(NULL) +
+  xlab(NULL) +
+  scale_y_continuous(labels = comma) +
+  ggtitle("Entities by Age")
+```
+
+Most alumni are graduates of `r school[1,1]`, followed by `r school[2,1]` and `r school[3,1]`. The following table displays the top five schools represented.
+
+```{r echo=FALSE, fig.align="center"}
+school %>%
+    kable(col.names = c("School", "Entities"),
+        format.args = list(big.mark = ",")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left") 
+```
+
+## Ratings
+
+`r percent(as.numeric(1-filter(rated, capacity_rating == "Not Rated")[1,3]/sum(rated$households)))` of households in `r msa_name` have been rated. Of those, `r percent(as.numeric(sum(filter(rated, capacity_rating_code %in% c(1:9))$households)/sum(filter(rated, capacity_rating_code %in% c(1:14))$households)))` are rated 250K+ or higher.
+
+```{r echo=FALSE, fig.align="center"}
+rated %>%
+  filter(capacity_rating != "Not Rated") %>%
+  ggplot(aes(x=reorder(capacity_rating, capacity_rating_code), y=households)) +
+  geom_bar(stat = "identity") +
+  theme_bw() + 
+  theme(rect = element_blank(), axis.ticks = element_blank()) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  ylab(NULL) +
+  xlab(NULL) +
+  scale_y_continuous(labels = comma) +
+  ggtitle("Households by Capacity Rating")
+
+```
+
+The following table looks at the breakdown of each capacity rating by Major Gift Score.
+
+```{r echo=FALSE, fig.align="center"}
+capacity_mgs_table %>%
+  kable(format.args = list(big.mark = ",")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
+  add_header_above(
+    header = c(" " = 1, 
+               "Major Gift Score" = ncol(capacity_mgs_table) - 1))
+```
+
+For unrated households only, the following table looks at the breakdown of Implied Capacity Score and Major Gift Score.
+
+```{r echo=FALSE, fig.align="center"}
+ics_mgs_table %>%
+  kable(format.args = list(big.mark = ",")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
+  add_header_above(
+    header = c(" " = 1, 
+               "Major Gift Score" = ncol(ics_mgs_table) - 1))  
+
+```
+
+## Events
+
+There have been `r n_distinct(events$activity_code)` events attended by `r msa_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(events, unit_code_desc), households = n_distinct(hh_id), events = n_distinct(activity_code)), 5, wt=events), -events)[1,1]` has held the most events, followed by `r arrange(top_n(summarise(group_by(events, unit_code_desc), households = n_distinct(hh_id), events = n_distinct(activity_code)), 5, wt=events), -events)[2,1]`.
+
+```{r echo=FALSE, fig.align="center"}
+events %>% 
+  group_by(fiscal_year) %>%
+  summarise(households = n_distinct(hh_id), events = n_distinct(activity_code)) %>%
+  mutate(households = scales::comma(households)) %>%
+  kable(col.names = c("Fiscal Year", "Households", "Events")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+
+events %>%
+  group_by(unit_code_desc) %>%
+  summarise(households = n_distinct(hh_id), events = n_distinct(activity_code)) %>%
+  top_n(5, wt=events) %>%
+  arrange(-events) %>%
+  mutate(households = scales::comma(households)) %>%
+  kable(col.names = c("Unit", "Households", "Events")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+## Visits
+
+There have been `r comma(n_distinct(visits$report_id))` visits to `r msa_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(visits, unit_desc), households = n_distinct(hh_id), visits = n_distinct(report_id)), 5, wt=visits), -visits)[1,1]` has made the most visits, followed by `r arrange(top_n(summarise(group_by(visits, unit_desc), households = n_distinct(hh_id), visits = n_distinct(report_id)), 5, wt=visits), -visits)[2,1]`.
+
+```{r echo=FALSE, fig.align="center"}
+visits %>%
+  group_by(fiscal_year) %>%
+  summarise(households = n_distinct(hh_id), visits = n_distinct(report_id)) %>%
+  mutate(households = scales::comma(households)) %>%
+      kable(col.names = c("Fiscal Year", "Households", "Visits")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+visits %>%
+  group_by(unit_desc) %>%
+  summarise(households = n_distinct(hh_id), visits = n_distinct(report_id)) %>%
+  top_n(5, wt=visits) %>%
+  arrange(-visits) %>%
+    mutate(households = scales::comma(households)) %>%
+      kable(col.names = c("Unit", "Households", "Visits")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+```
+
+## Proposals and Asks 
+
+There have been `r comma(n_distinct(proposals$proposal_id))` proposals involving `r msa_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[1,1]` has the most assignments, followed by `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[2,1]`.
+
+```{r echo=FALSE, fig.align="center"}
+proposals %>%
+  select(hh_id, fiscal_year, proposal_id, ask_made, disqualified, gift_made, canceled, turned_down, in_progress) %>%
+  distinct() %>%
+  group_by(fiscal_year) %>%
+  summarise(households = n_distinct(hh_id),
+            proposals = n_distinct(proposal_id),
+            ask_made = sum(ask_made),
+            disqualified = sum(disqualified),
+            gift_made = sum(gift_made), 
+            canceled = sum(canceled), 
+            turned_down = sum(turned_down),
+            in_progress = sum(in_progress)) %>%
+    mutate(households = scales::comma(households), proposals = scales::comma(proposals)) %>%
+        kable(col.names = c("Fiscal Year", "Households", "Proposals",
+                            "Ask Made", "Disqualified", "Gift Made", "Canceled", "Turned Down", "In Progress")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
+  add_header_above(header = c(" " = 4, "Outcomes" = 5))
+
+proposals %>%
+  group_by(unit) %>%
+  summarise(households = n_distinct(hh_id), proposals = n_distinct(proposal_id)) %>%
+  top_n(5, wt=proposals) %>%
+  arrange(-proposals) %>%
+  mutate(households = scales::comma(households), proposals = scales::comma(proposals)) %>%
+  kable(col.names = c("Unit", "Households", "Proposals")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+```
+
+The following tables look at only proposals where an ask was made.
+
+```{r echo=FALSE, fig.align="center"}
+proposals %>%
+  filter(ask_amt > 0) %>%
+  select(entity_id, hh_id, fiscal_year, proposal_id, unit, ask_amt, gift) %>%
+  group_by(hh_id, fiscal_year, proposal_id, unit) %>%
+  summarise(ask_amt = max(ask_amt), gift = max(gift)) %>%
+  group_by(fiscal_year) %>%
+  summarise(households = n_distinct(hh_id), asks = n_distinct(proposal_id), median_ask = median(ask_amt)) %>%
+  mutate(households = scales::comma(households), asks = scales::comma(asks), median_ask = scales::dollar(median_ask)) %>%
+        kable(col.names = c("Fiscal Year", "Households", "Asks", "Median Ask")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+proposals %>%
+  filter(ask_amt > 0) %>%
+  select(entity_id, hh_id, fiscal_year, proposal_id, unit, ask_amt, gift) %>%
+  group_by(hh_id, fiscal_year, proposal_id, unit) %>%
+  summarise(ask_amt = max(ask_amt), gift = max(gift)) %>%
+  group_by(unit) %>%
+  summarise(households = n_distinct(hh_id), asks = n_distinct(proposal_id), median_ask = median(ask_amt)) %>%
+  top_n(5, wt=asks) %>%
+  arrange(-asks) %>%
+  mutate(households = scales::comma(households), asks = scales::comma(asks), median_ask = scales::dollar(median_ask)) %>%
+          kable(col.names = c("Unit", "Households", "Asks", "Median Ask")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+```
+
+## Gifts
+
+`r msa_name` households have made `r comma(n_distinct(gifts$cads_giving_receipt_nbr))` gifts between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(gifts, area_of_giving), households = n_distinct(hh_id), gifts = n_distinct(cads_giving_receipt_nbr)), 5, wt=gifts), -gifts)[1,1]` has received the most gifts, followed by `r arrange(top_n(summarise(group_by(gifts, area_of_giving), households = n_distinct(hh_id), gifts = n_distinct(cads_giving_receipt_nbr)), 5, wt=gifts), -gifts)[2,1]`.
+
+```{r echo=FALSE, fig.align="center"}
+gifts %>%
+  filter(fiscal_year != 2019) %>% 
+  group_by(hh_id, fiscal_year, cads_giving_receipt_nbr, area_of_giving) %>%
+  summarise(gift_amt = max(gift_amt)) %>%
+  group_by(fiscal_year) %>%
+  summarise(households = n_distinct(hh_id), gifts = n_distinct(cads_giving_receipt_nbr), total_giving = sum(gift_amt), median_gift = median(gift_amt)) %>%
+  mutate(total_giving = scales::dollar(total_giving), median_gift = scales::dollar(median_gift)) %>%
+  mutate(households = scales::comma(households), gifts = scales::comma(gifts)) %>%
+  kable(col.names = c("Fiscal Year", "Households", "Gifts", "Total Giving", "Median Gift")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+  gifts %>%
+  filter(fiscal_year != 2019) %>% 
+  group_by(hh_id, fiscal_year, cads_giving_receipt_nbr, area_of_giving) %>%
+  summarise(gift_amt = max(gift_amt)) %>%
+  group_by(area_of_giving) %>%
+  summarise(households = n_distinct(hh_id), gifts = n_distinct(cads_giving_receipt_nbr), total_giving = sum(gift_amt), median_gift = median(gift_amt)) %>%
+  top_n(5, wt=gifts) %>%
+  arrange(-gifts) %>%
+  mutate(total_giving = scales::dollar(total_giving), median_gift = scales::dollar(median_gift)) %>%
+  mutate(households = scales::comma(households), gifts = scales::comma(gifts)) %>%
+  kable(col.names = c("Unit", "Households", "Gifts", "Total Giving", "Median Gift")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
+
+
+```
+
