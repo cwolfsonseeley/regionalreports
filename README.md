@@ -20,7 +20,7 @@ devtools::install_github("cwolfsonseeley/regionalreports")
 Example
 -------
 
-If you would like to run this report for all graduates of the College of Engineering and parents of current students at the College of Engineering who live in Boston, you would use the reginal\_school\_report() function.
+If you would like to run this report for all graduates of the College of Engineering and parents of current students at the College of Engineering who live in Boston, you would use the regional\_school\_report() function.
 
 ``` r
 ## first you'll need the codes for Boston and the College of Engineering
@@ -42,5 +42,5 @@ discoveryengine::has_degree_from(?engineering)
 ## remember to put quotations around names of MSA and school
 ## remember dates go in yyyymmdd format
 library(regionalreports)
-regional_school_report(msa = 14460, msa_name = "Boston", msa = school = EN, school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
+regional_school_report(msa = 14460, msa_name = "Boston", school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
 ```
