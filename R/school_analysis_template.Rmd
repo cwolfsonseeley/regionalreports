@@ -241,7 +241,7 @@ rated %>%
 
 ```
 
-The following table looks at the breakdown of each capacity rating by Major Gift Score.
+The following table looks at the breakdown of each capacity rating by Major Gift Score. The Major Gift Score is calculated for all undergraduate degree holders.
 
 ```{r echo=FALSE, fig.align="center"}
 capacity_mgs_table %>%
@@ -305,7 +305,7 @@ visits %>%
 
 ```
 
-## Proposals and Asks 
+## Solicitation Plans 
 
 There have been `r comma(n_distinct(proposals$proposal_id))` proposals involving `r school_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[1,1]` has the most assignments, followed by `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[2,1]`.
 
