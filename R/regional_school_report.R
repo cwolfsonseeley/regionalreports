@@ -17,7 +17,9 @@ regional_school_report = function(msa, msa_name, school_code, school_name, from,
   rmarkdown::render(
     "R:/Prospect Development/Prospect Analysis/regionalreports/R/region_and_school_analysis_template.Rmd", params = list(
       msa = msa,
-      msa_name = msa_name,
+      msa_name = msa_name, 
+      school_code = school_code,
+      school_name = school_name,
       from = from,
       to = to
     ),
