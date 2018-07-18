@@ -194,7 +194,7 @@ There are currently `r comma(n_distinct(prospects$entity_id))` alumni and curren
 record_type %>%
   filter(record_type_desc %in% c("UCB Parent of Current Student", "Alum: Undergrad", "Alum: Grad")) %>%
   kable(col.names = c("Record Type", "Entities*"),
-        format.args = list(big.mark = ",")) %>%
+        format.args = list(big.mark = ","), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   footnote(symbol = "Each entity may have multiple record types"
 )
@@ -219,7 +219,7 @@ Most alumni are graduates of `r school[1,1]`, followed by `r school[2,1]` and `r
 ```{r echo=FALSE, fig.align="center"}
 school %>%
     kable(col.names = c("School", "Entities"),
-        format.args = list(big.mark = ",")) %>%
+        format.args = list(big.mark = ","), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") 
 ```
 
@@ -246,7 +246,7 @@ The following table looks at the breakdown of each capacity rating by Major Gift
 
 ```{r echo=FALSE, fig.align="center"}
 capacity_mgs_table %>%
-  kable(format.args = list(big.mark = ",")) %>%
+  kable(format.args = list(big.mark = ","), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   add_header_above(
     header = c(" " = 1, 
@@ -259,7 +259,7 @@ For unrated households only, the following table looks at the breakdown of Impli
 
 ```{r echo=FALSE, fig.align="center"}
 ics_mgs_table %>%
-  kable(format.args = list(big.mark = ",")) %>%
+  kable(format.args = list(big.mark = ","), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   add_header_above(
     header = c(" " = 1, 
@@ -277,7 +277,7 @@ events %>%
   group_by(fiscal_year) %>%
   summarise(households = n_distinct(hh_id), events = n_distinct(activity_code)) %>%
   mutate(households = scales::comma(households)) %>%
-  kable(col.names = c("Fiscal Year", "Households", "Events")) %>%
+  kable(col.names = c("Fiscal Year", "Households", "Events"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 
@@ -287,7 +287,7 @@ events %>%
   top_n(5, wt=events) %>%
   arrange(-events) %>%
   mutate(households = scales::comma(households)) %>%
-  kable(col.names = c("Unit", "Households", "Events")) %>%
+  kable(col.names = c("Unit", "Households", "Events"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 ```
 
@@ -299,7 +299,7 @@ There have been `r comma(n_distinct(visits$report_id))` visits to `r msa_name` `
 visits %>%
   group_by(fiscal_year) %>%
   summarise(households = n_distinct(hh_id), visits = n_distinct(report_id)) %>%
-      kable(col.names = c("Fiscal Year", "Households", "Visits")) %>%
+      kable(col.names = c("Fiscal Year", "Households", "Visits"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 visits %>%
@@ -307,7 +307,7 @@ visits %>%
   summarise(households = n_distinct(hh_id), visits = n_distinct(report_id)) %>%
   top_n(5, wt=visits) %>%
   arrange(-visits) %>%
-      kable(col.names = c("Unit", "Households", "Visits")) %>%
+      kable(col.names = c("Unit", "Households", "Visits"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 ```
@@ -332,7 +332,7 @@ proposals %>%
     mutate(households = scales::comma(households),
            proposals = scales::comma(proposals)) %>%
         kable(col.names = c("Fiscal Year", "Households", "Proposals",
-                            "Ask Made", "Disqualified", "Gift Made", "Canceled", "Turned Down", "In Progress")) %>%
+                            "Ask Made", "Disqualified", "Gift Made", "Canceled", "Turned Down", "In Progress"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   add_header_above(header = c(" " = 4, "Outcomes" = 5))
 
@@ -343,7 +343,7 @@ proposals %>%
   arrange(-proposals) %>%
   mutate(households = scales::comma(households),
         proposals = scales::comma(proposals)) %>%
-  kable(col.names = c("Unit", "Households", "Proposals")) %>%
+  kable(col.names = c("Unit", "Households", "Proposals"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 ```
 
@@ -358,7 +358,7 @@ proposals %>%
   group_by(fiscal_year) %>%
   summarise(households = n_distinct(hh_id), asks = n_distinct(proposal_id), median_ask = median(ask_amt)) %>%
   mutate(median_ask = scales::dollar(median_ask)) %>%
-        kable(col.names = c("Fiscal Year", "Households", "Asks", "Median Ask")) %>%
+        kable(col.names = c("Fiscal Year", "Households", "Asks", "Median Ask"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 proposals %>%
@@ -373,7 +373,7 @@ proposals %>%
   mutate(households = scales::comma(households),
          asks = scales::comma(asks),
          median_ask = scales::dollar(median_ask)) %>%
-          kable(col.names = c("Unit", "Households", "Asks", "Median Ask")) %>%
+          kable(col.names = c("Unit", "Households", "Asks", "Median Ask"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 ```
@@ -391,7 +391,7 @@ gifts %>%
   summarise(households = n_distinct(hh_id), gifts = n_distinct(cads_giving_receipt_nbr), total_giving = sum(gift_amt), median_gift = median(gift_amt)) %>%
   mutate(total_giving = scales::dollar(total_giving), median_gift = scales::dollar(median_gift)) %>%
   mutate(households = scales::comma(households), gifts = scales::comma(gifts)) %>%
-  kable(col.names = c("Fiscal Year", "Households", "Gifts", "Total Giving", "Median Gift")) %>%
+  kable(col.names = c("Fiscal Year", "Households", "Gifts", "Total Giving", "Median Gift"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
   gifts %>%
@@ -404,7 +404,7 @@ gifts %>%
   arrange(-gifts) %>%
   mutate(total_giving = scales::dollar(total_giving), median_gift = scales::dollar(median_gift)) %>%
   mutate(households = scales::comma(households), gifts = scales::comma(gifts)) %>%
-  kable(col.names = c("Unit", "Households", "Gifts", "Total Giving", "Median Gift")) %>%
+  kable(col.names = c("Unit", "Households", "Gifts", "Total Giving", "Median Gift"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
 
