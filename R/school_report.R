@@ -19,6 +19,6 @@ school_report = function(school_code, school_name, from, to, output) {
       from = from,
       to = to
     ),
-    output_file = paste0(output, ".html")
+    output_file = normalizePath(paste0(output, ".html"), mustWork = FALSE) 
   )
 }
