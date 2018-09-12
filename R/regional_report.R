@@ -12,6 +12,7 @@
 #' regional_report(msa = 14460, msa_name = "Boston", from = 20140101, to = 20180630, output = "my_file/boston_report")
 
 regional_report = function(msa, msa_name, from, to, output) {
+  wd = getwd()
   rmarkdown::render(
     "R:/Prospect Development/Prospect Analysis/regionalreports/R/regional_analysis_template.Rmd", params = list(
       msa = msa,
@@ -19,7 +20,9 @@ regional_report = function(msa, msa_name, from, to, output) {
       from = from,
       to = to
     ),
-    output_file = normalizePath(paste0(output, ".html"), mustWork = FALSE) 
+    output_file = normalizePath(paste0(wd,
+                                       "\\",
+                                       output, ".html"), mustWork = FALSE)  
   )
 }
 

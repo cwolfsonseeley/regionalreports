@@ -14,6 +14,7 @@
 #' school_report(msa = 14460, msa_name = "Boston", school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
 
 regional_school_report = function(msa, msa_name, school_code, school_name, from, to, output) {
+  wd = getwd()
   rmarkdown::render(
     "R:/Prospect Development/Prospect Analysis/regionalreports/R/region_and_school_analysis_template.Rmd", params = list(
       msa = msa,
@@ -23,6 +24,8 @@ regional_school_report = function(msa, msa_name, school_code, school_name, from,
       from = from,
       to = to
     ),
-    output_file = normalizePath(paste0(output, ".html"), mustWork = FALSE) 
+    output_file = normalizePath(paste0(wd,
+                                       "\\",
+                                       output, ".html"), mustWork = FALSE)  
   )
 }

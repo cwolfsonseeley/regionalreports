@@ -12,6 +12,7 @@
 #' school_report(school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/engineering_report")
 
 school_report = function(school_code, school_name, from, to, output) {
+  wd = getwd()
   rmarkdown::render(
     "R:/Prospect Development/Prospect Analysis/regionalreports/R/school_analysis_template.Rmd", params = list(
       school_code = school_code,
@@ -19,6 +20,8 @@ school_report = function(school_code, school_name, from, to, output) {
       from = from,
       to = to
     ),
-    output_file = normalizePath(paste0(output, ".html"), mustWork = FALSE) 
+    output_file = normalizePath(paste0(wd,
+                                       "\\",
+                                       output, ".html"), mustWork = FALSE)  
   )
 }
