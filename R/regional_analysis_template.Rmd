@@ -115,8 +115,7 @@ capacity_mgs_table <- region_prospects %>%
   arrange(capacity_rating_code) %>%
   select(-capacity_rating_code) %>% 
   replace(is.na(.), 0) %>%
-  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
-  janitor::adorn_totals("row")
+  janitor::adorn_totals(c("row", "col"))
 
 colnames(capacity_mgs_table)[colnames(capacity_mgs_table)=="capacity_rating_desc"] <- "Capacity Rating"
 
@@ -136,8 +135,7 @@ ics_mgs_table <- region_prospects %>%
   summarise(households = n_distinct(hh_id)) %>%
   spread(major_gift_description, households) %>%
    replace(is.na(.), 0) %>%
-  mutate(Total = sum(`Most Likely`, `More Likely`, `Somewhat Likely`, `Less Likely`, `Least Likely`, `No Major Gift Score`)) %>%
-  janitor::adorn_totals("row")
+  janitor::adorn_totals(c("row", "col"))
 
 
 colnames(ics_mgs_table)[colnames(ics_mgs_table)=="implied_capacity_description"] <- "Implied Capacity Score"
