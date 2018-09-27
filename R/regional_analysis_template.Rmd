@@ -260,7 +260,7 @@ ics_mgs_table %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   add_header_above(
     header = c(" " = 1, 
-               "Major Gift Score" = ncol(capacity_mgs_table) - 2, 
+               "Major Gift Score" = ncol(ics_mgs_table) - 2, 
                 " "  = 1))
 
 ```
