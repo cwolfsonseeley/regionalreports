@@ -24,4 +24,19 @@ school_report = function(school_code, school_name, from, to, output) {
                                        "\\",
                                        output, ".html"), mustWork = FALSE)  
   )
+  
+  school <- function(school_code) {
+    
+    school_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/school/school.sql")
+    getcdw::get_cdw(school_query(school_code = school_code))
+  }
+  
+  school_prospects <- school(school_code = school_code) %>%
+    select(entity_id, hh_id) %>% 
+    distinct %>%
+    write.csv(normalizePath(paste0(wd,
+                                   "\\",
+                                   output, ".csv"), mustWork = FALSE), row.names = FALSE)
+  
+  
 }

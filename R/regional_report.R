@@ -35,7 +35,7 @@ regional_report = function(msa, msa_name, from, to, output) {
     distinct %>%
     write.csv(normalizePath(paste0(wd,
                                    "\\",
-                                   output, ".csv"), mustWork = FALSE))
+                                   output, ".csv"), mustWork = FALSE), row.names = FALSE)
   
 }
 
