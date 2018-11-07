@@ -24,5 +24,20 @@ regional_report = function(msa, msa_name, from, to, output) {
                                        "\\",
                                        output, ".html"), mustWork = FALSE)  
   )
+  region <- function(msa) {
+    
+    regional_query <- getcdw::parameterize_template("R:/Prospect Development/Prospect Analysis/regionalreports/sql/region/region.sql")
+    getcdw::get_cdw(regional_query(msa = msa))
+  }
+  
+  region_prospects <- region(msa = msa) %>%
+    select(entity_id, hh_id) %>% 
+    distinct %>%
+    write.csv(normalizePath(paste0(wd,
+                                   "\\",
+                                   output, ".csv"), mustWork = FALSE))
+  
 }
+
+
 
