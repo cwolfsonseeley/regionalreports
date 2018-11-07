@@ -11,7 +11,7 @@
 #' @export
 #' @examples
 #' # This would output the report for Boston and the College of Engineering from January 1, 2014 to June 30, 2018
-#' school_report(msa = 14460, msa_name = "Boston", school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
+#' regional_school_report(msa = 14460, msa_name = "Boston", school_code = "EN", school_name = "College of Engineering", from = 20140101, to = 20180630, output = "my_file/boston_engineering_report")
 
 regional_school_report = function(msa, msa_name, school_code, school_name, from, to, output) {
   wd = getwd()
