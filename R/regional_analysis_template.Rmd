@@ -313,7 +313,7 @@ visits %>%
 
 ## Solicitation Plans
 
-There have been `r comma(n_distinct(proposals$proposal_id))` proposals involving `r msa_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[1,1]` has the most assignments, followed by `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[2,1]`.
+There have been `r comma(n_distinct(proposals$proposal_id))` solicitation plans involving `r msa_name` households between `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` and `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`. `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[1,1]` has the most assignments, followed by `r arrange(top_n(summarise(group_by(proposals, unit), households = n_distinct(hh_id), proposals = n_distinct(proposal_id)), 5, wt=proposals), -proposals)[2,1]`.
 
 ```{r echo=FALSE, fig.align="center"}
 proposals %>%
@@ -329,7 +329,7 @@ proposals %>%
             turned_down = sum(turned_down),
             in_progress = sum(in_progress)) %>%
     mutate(households = scales::comma(households), proposals = scales::comma(proposals)) %>%
-        kable(col.names = c("Fiscal Year", "Households", "Proposals",
+        kable(col.names = c("Fiscal Year", "Households", "Solicitation Plans",
                             "Ask Made", "Disqualified", "Gift Made", "Canceled", "Turned Down", "In Progress"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left") %>%
   add_header_above(header = c(" " = 4, "Outcomes" = 5))
@@ -340,11 +340,11 @@ proposals %>%
   top_n(5, wt=proposals) %>%
   arrange(-proposals) %>%
   mutate(households = scales::comma(households), proposals = scales::comma(proposals)) %>%
-  kable(col.names = c("Unit", "Households", "Proposals"), align = 'l') %>%
+  kable(col.names = c("Unit", "Households", "Solicitation Plans"), align = 'l') %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 ```
 
-The following tables look at only proposals where an ask was made.
+The following tables look at only solicitation plans where an ask was made.
 
 ```{r echo=FALSE, fig.align="center"}
 proposals %>%
