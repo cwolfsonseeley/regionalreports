@@ -379,7 +379,6 @@ proposals %>%
 
 ```{r echo=FALSE, fig.align="center"}
 gifts %>%
-  filter(fiscal_year != 2019) %>% 
   group_by(hh_id, fiscal_year, cads_giving_receipt_nbr, area_of_giving) %>%
   summarise(gift_amt = max(gift_amt)) %>%
   group_by(fiscal_year) %>%
@@ -390,7 +389,6 @@ gifts %>%
   kable_styling(bootstrap_options = "striped", full_width = F, position = "left")
 
   gifts %>%
-  filter(fiscal_year != 2019) %>% 
   group_by(hh_id, fiscal_year, cads_giving_receipt_nbr, area_of_giving) %>%
   summarise(gift_amt = max(gift_amt)) %>%
   group_by(area_of_giving) %>%
