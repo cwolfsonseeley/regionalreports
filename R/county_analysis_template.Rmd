@@ -186,13 +186,13 @@ proposals <- proposals %>%
 
 ## Introduction
 
-This analysis looks at all alumni and current parents with a primary address in `r regional_name`. The time period included is from `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` to `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`.
+This analysis looks at all alumni and current parents with a primary address in `r region_name`. The time period included is from `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` to `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`.
 
-There are currently `r comma(n_distinct(region_prospects$entity_id))` alumni and current parents in `r msa_name`, comprising `r comma(n_distinct(region_prospects$hh_id))` households.
+There are currently `r comma(n_distinct(region_prospects$entity_id))` alumni and current parents in `r regional_name`, comprising `r comma(n_distinct(region_prospects$hh_id))` households.
 
 ## Demographics
 
-`r percent(as.numeric(record_type[1,2]/n_distinct(region_prospects$entity_id)))` of entities living in `r msa_name` have a record type of `r record_type[1,1]`, `r percent(as.numeric(record_type[2,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[2,1]`, and `r percent(as.numeric(record_type[3,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[3,1]`. Note that these percentages do not add up to 100% since each entity may have multiple record types.
+`r percent(as.numeric(record_type[1,2]/n_distinct(region_prospects$entity_id)))` of entities living in `r region_name` have a record type of `r record_type[1,1]`, `r percent(as.numeric(record_type[2,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[2,1]`, and `r percent(as.numeric(record_type[3,2]/n_distinct(region_prospects$entity_id)))` have a record type of `r record_type[3,1]`. Note that these percentages do not add up to 100% since each entity may have multiple record types.
 
 ```{r echo=FALSE, fig.align="center"}
 record_type %>%
