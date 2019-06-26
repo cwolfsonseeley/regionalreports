@@ -188,7 +188,7 @@ proposals <- proposals %>%
 
 This analysis looks at all alumni and current parents with a primary address in `r region_name`. The time period included is from `r format(as.Date(as.character(from), "%Y%m%d"),  "%B %d, %Y")` to `r format(as.Date(as.character(to), "%Y%m%d"),  "%B %d, %Y")`.
 
-There are currently `r comma(n_distinct(region_prospects$entity_id))` alumni and current parents in `r regional_name`, comprising `r comma(n_distinct(region_prospects$hh_id))` households.
+There are currently `r comma(n_distinct(region_prospects$entity_id))` alumni and current parents in `r region_name`, comprising `r comma(n_distinct(region_prospects$hh_id))` households.
 
 ## Demographics
 
